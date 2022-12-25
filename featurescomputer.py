@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-
+from pandas import IndexSlice as idx
 
 def get_seg_center_coords(df, pairs):
     """
@@ -111,6 +111,23 @@ def space_effort(df, win):
                     .droplevel(0) / \
                     np.sqrt(df.groupby("Point")["x"].diff(periods=win) ** 2 +
                             df.groupby("Point")["y"].diff(periods=win) ** 2)
-    print("Point 0\n", df.xs(0, level=1).loc[([0, 1, 2, 3], ["x", "y", "space"])])
+    # print("Point 0\n", df.xs(0, level=1).loc[([0, 1, 2, 3], ["x", "y", "space"])])
 
     return df
+
+
+def plane(df, win):
+    """
+    Plane effort parameter [Laban movement analysis] for every body point per frame_interval
+    :param df: parameters of keypoints in each frame
+    :return: dataframe with plane parameters
+    """
+    keyp_num = len(df.index.unique(level = 1))
+    new_df = pd.DataFrame()
+    new_df["plane_x"] = (df.loc[idx[:, :(keyp_num-2)], ["x"]] - df.xs(keyp_num-1, level=1)[["x"]]).groupby("Frame").sum().div(keyp_num-1).rolling(win).sum()
+    new_df["plane_y"] = (df.loc[idx[:, :(keyp_num-2)], ["y"]] - df.xs(keyp_num-1, level=1)[["y"]]).groupby("Frame").sum().div(keyp_num-1).rolling(win).sum()
+
+    new_df.dropna()
+    new_df.to_csv("plane.csv")
+    return
+

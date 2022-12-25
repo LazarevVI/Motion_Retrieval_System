@@ -11,8 +11,6 @@ pd.options.plotting.backend = "plotly"
 
 fps = 30
 
-data_dir = "OpenPose/openpose/data"  # directory with keypoints jsons
-
 pose_folder = "pose"
 face_folder = "face"
 lhand_folder = "lhand"
@@ -83,7 +81,7 @@ def delete_outliers(df):
 
         df_part["y"] = df_part["y"][~(outliers_low_y | outliers_up_y)]
         df_part = df_part[df_part['x' and 'y'].notna()]
-        df[df["Point"] == part] = df_part
+        df.loc[df["Point"] == part] = df_part
     return df
 
 
@@ -197,7 +195,7 @@ def extract_data(files):
 
     print("Extracting data from json files...")
     for json_file in tqdm(files):
-        f = open(data_dir + "/" + json_file)
+        f = open("data/" + json_file)
         data = json.load(f)
 
         df = pd.json_normalize(data["people"])
@@ -248,8 +246,9 @@ def compute_features():
     data = fc.speed(data, fps)
     data = fc.acceleration(data, fps)
     data = fc.weight_effort(data, 60)
-    data = fc.space_effort(data, 2)
+    data = fc.space_effort(data, 60)
     data.to_csv("keypoints_with_extracted_features.csv")
+    fc.plane(data, 60)
     return
 
 
