@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from pandas import IndexSlice as idx
+import matplotlib.cm as cm
+from matplotlib.colors import Normalize
+import matplotlib.pyplot as plt
 
 def get_seg_center_coords(df, pairs):
     """
@@ -119,15 +122,42 @@ def space_effort(df, win):
 def plane(df, win):
     """
     Plane effort parameter [Laban movement analysis] for every body point per frame_interval
+    :param win: rolling window size
     :param df: parameters of keypoints in each frame
     :return: dataframe with plane parameters
     """
     keyp_num = len(df.index.unique(level = 1))
     new_df = pd.DataFrame()
-    new_df["plane_x"] = (df.loc[idx[:, :(keyp_num-2)], ["x"]] - df.xs(keyp_num-1, level=1)[["x"]]).groupby("Frame").sum().div(keyp_num-1).rolling(win).sum()
-    new_df["plane_y"] = (df.loc[idx[:, :(keyp_num-2)], ["y"]] - df.xs(keyp_num-1, level=1)[["y"]]).groupby("Frame").sum().div(keyp_num-1).rolling(win).sum()
+    new_df["plane_x"] = (df.loc[idx[:, :(keyp_num-2)], ["x"]] - df.xs(keyp_num-1, level=1)[["x"]]).groupby("Frame")\
+        .sum()\
+        .div(keyp_num-1)\
+        .rolling(win)\
+        .sum()
+    new_df["plane_y"] = (df.loc[idx[:, :(keyp_num-2)], ["y"]] - df.xs(keyp_num-1, level=1)[["y"]]).groupby("Frame")\
+        .sum()\
+        .div(keyp_num-1)\
+        .rolling(win)\
+        .sum()
 
     new_df.dropna()
     new_df.to_csv("plane.csv")
     return
 
+
+def velocity_field(df):
+
+    points = np.arange(40)
+    x0 = df.loc[(slice(None), points), "x"]
+    y0 = df.loc[(slice(None), points), "y"]
+
+    u0 = df.loc[(slice(None), points), "v_x"]
+    v0 = df.loc[(slice(None), points), "v_y"]
+
+    color = df.loc[(slice(None), points), "speed"]
+
+    fig, ax = plt.subplots()
+
+    ax.quiver(x0, y0, u0, v0, color)
+    plt.show()
+
+    return

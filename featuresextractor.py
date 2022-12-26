@@ -55,31 +55,32 @@ def delete_outliers(df):
     print("\nDeleting outliers...")
     for part in tqdm(range(len_points)):
         df_part = df.loc[df["Point"] == part]
-        df_part = df_part.interpolate(method="slinear")
+        df_part = df_part.interpolate(method="linear")
 
-        Q1_x = df_part["x"].quantile(0.05)
-        Q3_x = df_part["x"].quantile(0.95)
+        Q1_x = df_part["x"].quantile(0.1)
+        Q3_x = df_part["x"].quantile(0.9)
         IQR_x = Q3_x - Q1_x
 
-        lower_lim_x = Q1_x - 1.5 * IQR_x
-        upper_lim_x = Q3_x + 1.5 * IQR_x
+        lower_lim_x = Q1_x - 0.9 * IQR_x
+        upper_lim_x = Q3_x + 0.9 * IQR_x
 
         outliers_low_x = (df_part["x"] < lower_lim_x)
         outliers_up_x = (df_part["x"] > upper_lim_x)
 
         df_part["x"] = df_part["x"][~(outliers_low_x | outliers_up_x)]
 
-        Q1_y = df_part["y"].quantile(0.05)
-        Q3_y = df_part["y"].quantile(0.95)
+        Q1_y = df_part["y"].quantile(0.1)
+        Q3_y = df_part["y"].quantile(0.9)
         IQR_y = Q3_y - Q1_y
 
-        lower_lim_y = Q1_y - 1.5 * IQR_y
-        upper_lim_y = Q3_y + 1.5 * IQR_y
+        lower_lim_y = Q1_y - 0.9 * IQR_y
+        upper_lim_y = Q3_y + 0.9 * IQR_y
 
         outliers_low_y = (df_part["y"] < lower_lim_y)
         outliers_up_y = (df_part["y"] > upper_lim_y)
 
         df_part["y"] = df_part["y"][~(outliers_low_y | outliers_up_y)]
+
         df_part = df_part[df_part['x' and 'y'].notna()]
         df.loc[df["Point"] == part] = df_part
     return df
@@ -247,6 +248,7 @@ def compute_features():
     data = fc.acceleration(data, fps)
     data = fc.weight_effort(data, 60)
     data = fc.space_effort(data, 60)
+    fc.velocity_field(data)
     data.to_csv("keypoints_with_extracted_features.csv")
     fc.plane(data, 60)
     return

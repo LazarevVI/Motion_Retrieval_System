@@ -11,7 +11,8 @@ def main():
     # json_files = fe.get_jsons("data")
     # fe.extract_data(json_files)
     data = pd.read_csv("keypoints_2d.csv")
-    data = fe.preprocess_data(data)
+    # data = fe.preprocess_data(data)
+    # fe.plot_keyp_trajectory([4])
     fe.compute_features()
 
 
